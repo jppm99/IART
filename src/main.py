@@ -76,7 +76,7 @@ class Game(object):
 
         if nTries > 0:
             nTries -= 1
-            return [random.randint(0,xLength), random.randint(0, yLength)]
+            return [random.randint(0,xLength-1), random.randint(0, yLength-1)]
         else:
             return "skip"
 
@@ -97,6 +97,7 @@ class Game(object):
             for ball in balls:
                 ball.move()
 
+            print("***********")
             print(currState)
 
 
