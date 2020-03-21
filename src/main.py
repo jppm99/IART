@@ -156,10 +156,10 @@ def main():
     game = Game(name)
 
     game.play()
-    arcade.run()
 
     print("Game Ended")
-
+    arcade.run()
+    
 
 if __name__ == '__main__':
     main()
