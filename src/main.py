@@ -114,8 +114,10 @@ class Game(object):
         arcade.finish_render()
         
         if sleep_duration == None:
+            print("sleeping 0.6s")
             time.sleep(0.6)
         else:
+            print("sleeping " + str(sleep_duration) + "s")
             time.sleep(sleep_duration)
         
 
