@@ -93,8 +93,12 @@ class Game(object):
             for line in f:
                 currState.append([int(el) for el in line.split()])
     
-    def draw_screen(self, sleep_duration):
+    def draw_screen(self, sleep_duration, log):
         global currState, SCREEN_HEIGHT
+
+        if log == True:
+            print("**************")
+            print(currState)
 
         arcade.start_render()
 
@@ -108,6 +112,7 @@ class Game(object):
                     arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.RED)
         
         arcade.finish_render()
+        
         if sleep_duration == None:
             time.sleep(0.6)
         else:
@@ -126,9 +131,7 @@ class Game(object):
     def play(self):
         global nTries, balls, currState
 
-        print("Initial board")
-        print(currState)
-        self.draw_screen(1)
+        self.draw_screen(1, False)
 
         while nTries > 0:
             click = self.get_input()
@@ -141,18 +144,14 @@ class Game(object):
                 balls.append(Projectile("right", click))
                 balls.append(Projectile("left", click))
             
-            self.draw_screen(0.7)
-            print("***********")
-            print(currState)
+            self.draw_screen(0.7, False)
             
             while len(balls) > 0:
                 for ball in balls:
                     ball.move()
-                    self.draw_screen(0.1)
+                    self.draw_screen(0.1, False)
 
-            print("***********")
-            print(currState)
-            self.draw_screen(0.5)
+            self.draw_screen(0.5, False)
 
 
 
