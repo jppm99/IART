@@ -11,7 +11,7 @@ CIRCLE_PADDING = 0.8  # 1 is touching lines and 0 no balls at all
 # name of the file to be processed
 name = 'level.txt'
 
-# 2d matrix with 0,0 at top left
+# 2d matrix with (0,0) at top left, currState[y][x]
 currState = []
 
 # x and y axis size
@@ -24,12 +24,22 @@ nTries = 0
 # list of projectiles
 balls = []
 
+# projectiles count
+ballCount = 0
 
 class Projectile(object):
     # pos is [y,x]
     def __init__(self, direction, pos):
+        global ballCount
+
+        ballCount += 1
+        self.id = ballCount
+        
         self.direction = direction
-        self.pos = pos
+        self.pos = pos.copy()
+    
+    def __str__(self):
+        return "id: %d || pos: (%d, %d) || direction: %s" % (self.id, self.pos[1], self.pos[0], self.direction)
 
     def move(self):
         global currState, balls
@@ -44,19 +54,23 @@ class Projectile(object):
         elif(self.direction == "left"):
             self.pos[1] -= 1
 
-        if not (self.pos[0] in range(yLength) and self.pos[1] in range(xLength)):
+        if not ((self.pos[0] >= 0 and self.pos[0] < yLength) and (self.pos[1] >= 0 and self.pos[1] < xLength)):
             self.delete()
             return
 
         # blowup
+        hit = False
         if currState[self.pos[0]] [self.pos[1]] > 0:
             currState[self.pos[0]] [self.pos[1]] -= 1
             if not currState[self.pos[0]] [self.pos[1]]:
+                hit = True
                 balls.append(Projectile("up", self.pos))
                 balls.append(Projectile("down", self.pos))
                 balls.append(Projectile("right", self.pos))
                 balls.append(Projectile("left", self.pos))
             self.delete()
+        
+        return hit
         
     def delete(self):
         global balls
@@ -96,12 +110,13 @@ class Game(object):
     def draw_screen(self, sleep_duration, log):
         global currState, SCREEN_HEIGHT
 
-        if log == True:
+        if log:
             print("**************")
             print(currState)
 
         arcade.start_render()
 
+        # y axis "inverted" cuz origin is in oposite side in screen and currState array
         for y in range(yLength):
             for x in range(xLength):
                 if currState[y][x] == 3:
@@ -114,12 +129,13 @@ class Game(object):
         arcade.finish_render()
         
         if sleep_duration == None:
-            print("sleeping 0.6s")
+            if log:
+                print("sleeping 0.6s")
             time.sleep(0.6)
         else:
-            print("sleeping " + str(sleep_duration) + "s")
+            if log:
+                print("sleeping " + str(sleep_duration) + "s")
             time.sleep(sleep_duration)
-        
 
     def get_input(self):
         global xLength, yLength, nTries
@@ -130,10 +146,12 @@ class Game(object):
         else:
             return "skip"
 
-    def play(self):
+    def play(self, log):
         global nTries, balls, currState
 
-        self.draw_screen(1, False)
+        self.draw_screen(1, log)
+
+        balls.clear()
 
         while nTries > 0:
             click = self.get_input()
@@ -146,23 +164,25 @@ class Game(object):
                 balls.append(Projectile("right", click))
                 balls.append(Projectile("left", click))
             
-            self.draw_screen(0.7, False)
+            self.draw_screen(0.7, log)
             
             while len(balls) > 0:
                 for ball in balls:
-                    ball.move()
-                    self.draw_screen(0.1, False)
+                    if ball.move():
+                        self.draw_screen(0.1, log)
+                    if log:
+                        print(ball)
 
-            self.draw_screen(0.5, False)
-
-
+            self.draw_screen(0.5, log)
 
 def main():
+    global nTries
+
     game = Game(name)
 
-    game.play()
+    game.play(log=False)
 
-    print("Game Ended")
+    print("Game Ended - %d tries left" % nTries)
     arcade.run()
     
 
