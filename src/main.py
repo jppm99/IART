@@ -42,8 +42,6 @@ class Projectile(object):
         return "id: %d || pos: (%d, %d) || direction: %s" % (self.id, self.pos[1], self.pos[0], self.direction)
 
     def move(self):
-        global currState, balls
-
         # pos update
         if(self.direction == "up"):
             self.pos[0] -= 1
@@ -54,23 +52,28 @@ class Projectile(object):
         elif(self.direction == "left"):
             self.pos[1] -= 1
 
+
+    def check_colision(self):
+        global balls, currState
+
+        newBalls = []
+
         if not ((self.pos[0] >= 0 and self.pos[0] < yLength) and (self.pos[1] >= 0 and self.pos[1] < xLength)):
             self.delete()
-            return
+            return "out"
 
         # blowup
-        hit = False
         if currState[self.pos[0]] [self.pos[1]] > 0:
             currState[self.pos[0]] [self.pos[1]] -= 1
             if not currState[self.pos[0]] [self.pos[1]]:
-                hit = True
-                balls.append(Projectile("up", self.pos))
-                balls.append(Projectile("down", self.pos))
-                balls.append(Projectile("right", self.pos))
-                balls.append(Projectile("left", self.pos))
+                newBalls.append(Projectile("up", self.pos))
+                newBalls.append(Projectile("down", self.pos))
+                newBalls.append(Projectile("right", self.pos))
+                newBalls.append(Projectile("left", self.pos))
             self.delete()
         
-        return hit
+        return newBalls
+
         
     def delete(self):
         global balls
@@ -146,6 +149,36 @@ class Game(object):
         else:
             return "skip"
 
+
+    def move_balls(self, log):
+        global balls
+        for ball in balls:
+            ball.move()
+            if log:
+                print(ball)
+
+
+    def check_colisions(self, log):
+        global balls
+        newBalls = []
+
+        i = 0
+        while i < len(balls):
+            auxballs = balls[i].check_colision()
+            if auxballs != "out":
+                if (len(auxballs) > 0):
+                    newBalls.extend(auxballs)
+                    self.draw_screen(0.05, log)
+                else:
+                    i=i+1
+        
+        balls.extend(newBalls)
+
+        if log:
+            for ball in balls:
+                print(ball)
+
+
     def play(self, log):
         global nTries, balls, currState
 
@@ -164,16 +197,15 @@ class Game(object):
                 balls.append(Projectile("right", click))
                 balls.append(Projectile("left", click))
             
-            self.draw_screen(0.7, log)
-            
-            while len(balls) > 0:
-                for ball in balls:
-                    if ball.move():
-                        self.draw_screen(0.1, log)
-                    if log:
-                        print(ball)
+                self.draw_screen(0.7, log)
 
-            self.draw_screen(0.5, log)
+                while len(balls) > 0:
+                    self.move_balls(log)
+                    self.check_colisions(log)
+                    time.sleep(0.15)
+
+
+                self.draw_screen(0.5, log)
 
 def main():
     global nTries
