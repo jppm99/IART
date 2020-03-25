@@ -56,13 +56,12 @@ class Projectile(object):
     def check_colision(self):
         global balls, currState
 
-        newBalls = []
-
         if not ((self.pos[0] >= 0 and self.pos[0] < yLength) and (self.pos[1] >= 0 and self.pos[1] < xLength)):
             self.delete()
-            return "out"
+            return "deleted"
 
         # blowup
+        newBalls = []
         if currState[self.pos[0]] [self.pos[1]] > 0:
             currState[self.pos[0]] [self.pos[1]] -= 1
             if not currState[self.pos[0]] [self.pos[1]]:
@@ -70,7 +69,11 @@ class Projectile(object):
                 newBalls.append(Projectile("down", self.pos))
                 newBalls.append(Projectile("right", self.pos))
                 newBalls.append(Projectile("left", self.pos))
-            self.delete()
+                self.delete()
+                return newBalls
+            else:
+                self.delete()
+                return "deleted"
         
         return newBalls
 
@@ -143,11 +146,8 @@ class Game(object):
     def get_input(self):
         global xLength, yLength, nTries
 
-        if nTries > 0:
-            nTries -= 1
-            return [random.randint(0,yLength-1), random.randint(0, xLength-1)]
-        else:
-            return "skip"
+        nTries -= 1
+        return [random.randint(0,yLength-1), random.randint(0, xLength-1)]
 
 
     def move_balls(self, log):
@@ -165,7 +165,7 @@ class Game(object):
         i = 0
         while i < len(balls):
             auxballs = balls[i].check_colision()
-            if auxballs != "out":
+            if auxballs != "deleted":
                 if (len(auxballs) > 0):
                     newBalls.extend(auxballs)
                     self.draw_screen(0.05, log)
@@ -189,23 +189,20 @@ class Game(object):
         while nTries > 0:
             click = self.get_input()
 
-            if click != "skip":
-                print("click: (" + str(click[1]) + "," + str(click[0]) + ")")
-                currState[click[0]][click[1]] = max(0, currState[click[0]][click[1]] - 1)
+            print("click: (" + str(click[1]) + "," + str(click[0]) + ")")
+            currState[click[0]][click[1]] = max(0, currState[click[0]][click[1]] - 1)
+            self.draw_screen(0.7, log)
+
+            if not currState[click[0]] [click[1]]:
                 balls.append(Projectile("up", click))
                 balls.append(Projectile("down", click))
                 balls.append(Projectile("right", click))
                 balls.append(Projectile("left", click))
-            
-                self.draw_screen(0.7, log)
 
                 while len(balls) > 0:
                     self.move_balls(log)
                     self.check_colisions(log)
-                    time.sleep(0.15)
-
-
-                self.draw_screen(0.5, log)
+                    time.sleep(0.2)
 
 def main():
     global nTries
