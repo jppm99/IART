@@ -33,10 +33,12 @@ nodeCount = 0
 
 
 class Node(object):
+
     def __init__(self, parent, click, state, currentCost):
         global nodeCount
 
         self.parent = parent
+        self.children = []
         self.click = click
         self.state = state
         nodeCount += 1
@@ -44,6 +46,18 @@ class Node(object):
         self.currentCost = currentCost
         self.estimatedCost = 0
         self.totalCost = 0
+
+    
+    def get_children(self):
+        i = 0
+        while i < xLength:
+            j = 0
+            while j < yLength:
+                if self.state[j][i] != 0:
+                    next_state = next_state(i, j)
+                    child = Node(self, [j,i], next_state, self.currentCost+1)
+                j = j + 1
+            x = x + 1
 
 
 
