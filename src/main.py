@@ -1,6 +1,7 @@
 import random
 import time
 import arcade
+from anytree import Node, RenderTree
 
 
 # Set constants for the screen size
@@ -26,6 +27,9 @@ balls = []
 
 # projectiles count
 ballCount = 0
+
+# tree
+root = Node("root")
 
 class Projectile(object):
     # pos is [y,x]
