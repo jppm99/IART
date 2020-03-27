@@ -54,6 +54,21 @@ class Node(object):
             ball.move()
 
     
+    def check_colisions(self):
+        newBalls = []
+
+        i = 0
+        while i < len(self.balls):
+            auxballs = self.balls[i].check_colision(self.state)
+            if auxballs != "deleted":
+                if (len(auxballs) > 0):
+                    newBalls.extend(auxballs)
+                else:
+                    i=i+1
+        
+        self.balls.extend(newBalls)
+
+    
     def process_click(self):
         self.state[self.click[0]][self.click[1]] = max(0, self.state[self.click[0]][self.click[1]] - 1)
 
@@ -108,7 +123,6 @@ class Projectile(object):
 
 
     def check_colision(self, state):
-
         if not ((self.pos[0] >= 0 and self.pos[0] < yLength) and (self.pos[1] >= 0 and self.pos[1] < xLength)):
             self.delete()
             return "deleted"
