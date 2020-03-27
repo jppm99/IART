@@ -97,7 +97,7 @@ class Node(object):
             x = x + 1
 
 
-    def draw_screen(self, sleep_duration):
+    def draw(self, sleep_duration):
         global SCREEN_HEIGHT, SCREEN_WIDTH, CIRCLE_PADDING, yLength, xLength
 
         radius = min(SCREEN_WIDTH / xLength, SCREEN_HEIGHT / yLength) * CIRCLE_PADDING / 2
@@ -122,6 +122,13 @@ class Node(object):
             time.sleep(0.6)
         else:
             time.sleep(sleep_duration)
+
+
+    def draw_results(self, sleep_duration):
+        self.draw(sleep_duration)
+
+        for child in children:
+            child.draw_results(sleep_duration)
 
 
 
@@ -300,14 +307,36 @@ class Game(object):
                     self.check_colisions(log)
                     time.sleep(0.2)
 
-def main():
+
+def get_level(name):
     global nTries
+    global xLength, yLength
+
+    state = []
+
+    path = '../' + name
+    
+    with open(path, 'r') as f:
+        [xLength, yLength, nTries] = [int(el) for el in f.readline().split()]
+            
+        for line in f:
+            state.append([int(el) for el in line.split()])
+
+    return state
+    
+
+def main():
+    global nTries, name
 
     game = Game(name)
 
     game.play(log=False)
 
     print("Game Ended - %d tries left" % nTries)
+
+    state = get_level(name)
+    root = Node(None, None, state, 0)
+
     arcade.run()
     
 
