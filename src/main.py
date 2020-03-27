@@ -1,6 +1,7 @@
 import random
 import time
 import arcade
+from copy import deepcopy
 
 
 # Set constants for the screen size
@@ -59,7 +60,7 @@ class Node(object):
 
         i = 0
         while i < len(self.balls):
-            auxballs = self.balls[i].check_colision(self.state)
+            auxballs = self.balls[i].check_colision(self.balls, self.state)
             if auxballs != "deleted":
                 if (len(auxballs) > 0):
                     newBalls.extend(auxballs)
@@ -73,10 +74,10 @@ class Node(object):
         self.state[self.click[0]][self.click[1]] = max(0, self.state[self.click[0]][self.click[1]] - 1)
 
         if not self.state[self.click[0]][self.click[1]]:
-            self.balls.append(Projectile("up", click))
-            self.balls.append(Projectile("down", click))
-            self.balls.append(Projectile("right", click))
-            self.balls.append(Projectile("left", click))
+            self.balls.append(Projectile("up", self.click))
+            self.balls.append(Projectile("down", self.click))
+            self.balls.append(Projectile("right", self.click))
+            self.balls.append(Projectile("left", self.click))
 
             while len(self.balls) > 0:
                 self.move_balls()
@@ -87,14 +88,16 @@ class Node(object):
         global xLength, yLength
 
         i = 0
-        while i < xLength:
+        while i < yLength:
             j = 0
-            while j < yLength:
-                if self.state[j][i] != 0:
-                    child = Node(self, [j,i], self.state, self.currentCost+1)
+            while j < xLength:
+                if self.state[i][j] != 0:
+                    new_state = deepcopy(self.state)
+                    child = Node(self, [i,j], new_state, self.currentCost+1)
                     child.process_click()
+                    self.children.append(child)
                 j = j + 1
-            x = x + 1
+            i = i + 1
 
 
     def draw(self, sleep_duration):
@@ -106,14 +109,14 @@ class Node(object):
 
         arcade.start_render()
 
-        # y axis "inverted" cuz origin is in oposite side in screen and currState array
+        # y axis "inverted" cuz origin is in oposite side in screen and state array
         for y in range(yLength):
             for x in range(xLength):
-                if currState[y][x] == 3:
+                if self.state[y][x] == 3:
                     arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.GREEN)
-                elif currState[y][x] == 2:
+                elif self.state[y][x] == 2:
                     arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.YELLOW)
-                elif currState[y][x] == 1:
+                elif self.state[y][x] == 1:
                     arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.RED)
         
         arcade.finish_render()
@@ -127,7 +130,7 @@ class Node(object):
     def draw_results(self, sleep_duration):
         self.draw(sleep_duration)
 
-        for child in children:
+        for child in self.children:
             child.draw_results(sleep_duration)
 
 
@@ -158,9 +161,9 @@ class Projectile(object):
             self.pos[1] -= 1
 
 
-    def check_colision(self, state):
+    def check_colision(self, balls, state):
         if not ((self.pos[0] >= 0 and self.pos[0] < yLength) and (self.pos[1] >= 0 and self.pos[1] < xLength)):
-            self.delete()
+            self.delete(balls)
             return "deleted"
 
         # blowup
@@ -172,18 +175,16 @@ class Projectile(object):
                 newBalls.append(Projectile("down", self.pos))
                 newBalls.append(Projectile("right", self.pos))
                 newBalls.append(Projectile("left", self.pos))
-                self.delete()
+                self.delete(balls)
                 return newBalls
             else:
-                self.delete()
+                self.delete(balls)
                 return "deleted"
         
         return newBalls
 
         
-    def delete(self):
-        global balls
-
+    def delete(self, balls):
         balls.remove(self)
         del self
         
@@ -262,12 +263,12 @@ class Game(object):
 
 
     def check_colisions(self, log):
-        global balls
+        global balls, currState
         newBalls = []
 
         i = 0
         while i < len(balls):
-            auxballs = balls[i].check_colision(currState)
+            auxballs = balls[i].check_colision(balls, currState)
             if auxballs != "deleted":
                 if (len(auxballs) > 0):
                     newBalls.extend(auxballs)
@@ -336,6 +337,8 @@ def main():
 
     state = get_level(name)
     root = Node(None, None, state, 0)
+    root.get_children()
+    root.draw_results(1)
 
     arcade.run()
     
