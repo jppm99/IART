@@ -84,6 +84,8 @@ class Node(object):
 
 
     def get_children(self):
+        global xLength, yLength
+
         i = 0
         while i < xLength:
             j = 0
@@ -93,6 +95,33 @@ class Node(object):
                     child.process_click()
                 j = j + 1
             x = x + 1
+
+
+    def draw_screen(self, sleep_duration):
+        global SCREEN_HEIGHT, SCREEN_WIDTH, CIRCLE_PADDING, yLength, xLength
+
+        radius = min(SCREEN_WIDTH / xLength, SCREEN_HEIGHT / yLength) * CIRCLE_PADDING / 2
+        row_height = SCREEN_HEIGHT / yLength
+        col_width = SCREEN_WIDTH / xLength
+
+        arcade.start_render()
+
+        # y axis "inverted" cuz origin is in oposite side in screen and currState array
+        for y in range(yLength):
+            for x in range(xLength):
+                if currState[y][x] == 3:
+                    arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.GREEN)
+                elif currState[y][x] == 2:
+                    arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.YELLOW)
+                elif currState[y][x] == 1:
+                    arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.RED)
+        
+        arcade.finish_render()
+        
+        if sleep_duration == None:
+            time.sleep(0.6)
+        else:
+            time.sleep(sleep_duration)
 
 
 
