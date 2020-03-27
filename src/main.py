@@ -41,6 +41,7 @@ class Node(object):
         self.children = []
         self.click = click
         self.state = state
+        self.balls = []
         nodeCount += 1
         self.id = nodeCount
         self.currentCost = currentCost
@@ -48,6 +49,20 @@ class Node(object):
         self.totalCost = 0
 
     
+    def next_state(x, y):
+        self.state[y][x] = max(0, self.state[y][x] - 1)
+
+        if not self.state[y][x]:
+            self.balls.append(Projectile("up", click))
+            self.balls.append(Projectile("down", click))
+            self.balls.append(Projectile("right", click))
+            self.balls.append(Projectile("left", click))
+
+            while len(self.balls) > 0:
+                self.move_balls()
+                self.check_colisions()
+
+
     def get_children(self):
         i = 0
         while i < xLength:
