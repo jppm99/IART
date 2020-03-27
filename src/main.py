@@ -48,11 +48,16 @@ class Node(object):
         self.estimatedCost = 0
         self.totalCost = 0
 
-    
-    def next_state(x, y):
-        self.state[y][x] = max(0, self.state[y][x] - 1)
 
-        if not self.state[y][x]:
+    def move_balls(self):
+        for ball in self.balls:
+            ball.move()
+
+    
+    def process_click(self):
+        self.state[self.click[0]][self.click[1]] = max(0, self.state[self.click[0]][self.click[1]] - 1)
+
+        if not self.state[self.click[0]][self.click[1]]:
             self.balls.append(Projectile("up", click))
             self.balls.append(Projectile("down", click))
             self.balls.append(Projectile("right", click))
@@ -69,8 +74,8 @@ class Node(object):
             j = 0
             while j < yLength:
                 if self.state[j][i] != 0:
-                    next_state = next_state(i, j)
-                    child = Node(self, [j,i], next_state, self.currentCost+1)
+                    child = Node(self, [j,i], self.state, self.currentCost+1)
+                    child.process_click()
                 j = j + 1
             x = x + 1
 
@@ -102,8 +107,7 @@ class Projectile(object):
             self.pos[1] -= 1
 
 
-    def check_colision(self):
-        global balls, currState
+    def check_colision(self, state):
 
         if not ((self.pos[0] >= 0 and self.pos[0] < yLength) and (self.pos[1] >= 0 and self.pos[1] < xLength)):
             self.delete()
@@ -111,9 +115,9 @@ class Projectile(object):
 
         # blowup
         newBalls = []
-        if currState[self.pos[0]] [self.pos[1]] > 0:
-            currState[self.pos[0]] [self.pos[1]] -= 1
-            if not currState[self.pos[0]] [self.pos[1]]:
+        if state[self.pos[0]] [self.pos[1]] > 0:
+            state[self.pos[0]] [self.pos[1]] -= 1
+            if not state[self.pos[0]] [self.pos[1]]:
                 newBalls.append(Projectile("up", self.pos))
                 newBalls.append(Projectile("down", self.pos))
                 newBalls.append(Projectile("right", self.pos))
@@ -213,7 +217,7 @@ class Game(object):
 
         i = 0
         while i < len(balls):
-            auxballs = balls[i].check_colision()
+            auxballs = balls[i].check_colision(currState)
             if auxballs != "deleted":
                 if (len(auxballs) > 0):
                     newBalls.extend(auxballs)
