@@ -134,6 +134,25 @@ class Node(object):
             child.draw_results(sleep_duration)
 
 
+    def get_solution(self):
+        solution_found = False
+        clicks = []
+
+        while solution_found != True:
+            best_node = get_best_node()
+            if best_node.estimatedCost == 0:
+                solution_found = True
+            else:
+                best_node.get_children()
+
+        current_node = best_node
+        while current_node.id != 1:
+            clicks.append(current_node.click)
+            current_node = current_node.parent
+
+        return clicks
+
+
 
 class Projectile(object):
     # pos is [y,x]
