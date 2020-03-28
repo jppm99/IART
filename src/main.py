@@ -53,7 +53,7 @@ class Node(object):
             self.totalCost = self.currentCost + self.estimatedCost
 
 
-    def resetCosts():
+    def reset_costs():
         self.estimatedCost = None
         self.totalCost = None
 
