@@ -46,8 +46,16 @@ class Node(object):
         nodeCount += 1
         self.id = nodeCount
         self.currentCost = currentCost
-        self.estimatedCost = 0
-        self.totalCost = 0
+        if id == 1:
+            self.resetCosts()
+        else:
+            self.estimatedCost = 0
+            self.totalCost = self.currentCost + self.estimatedCost
+
+
+    def resetCosts():
+        self.estimatedCost = None
+        self.totalCost = None
 
 
     def move_balls(self):
@@ -134,16 +142,24 @@ class Node(object):
             child.draw_results(sleep_duration)
 
 
+    def get_best_node(self):
+        return self.children[18]
+
+
     def get_solution(self):
         solution_found = False
         clicks = []
 
+        self.get_children()
+        best_node = self
+
         while solution_found != True:
-            best_node = get_best_node()
+            best_node = self.get_best_node()
             if best_node.estimatedCost == 0:
                 solution_found = True
             else:
                 best_node.get_children()
+                best_node.resetCosts()
 
         current_node = best_node
         while current_node.id != 1:
@@ -356,8 +372,8 @@ def main():
 
     state = get_level(name)
     root = Node(None, None, state, 0)
-    root.get_children()
-    root.draw_results(1)
+    solution = root.get_solution()
+    print(solution)
 
     arcade.run()
     
