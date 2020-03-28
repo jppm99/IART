@@ -143,7 +143,22 @@ class Node(object):
 
 
     def get_best_node(self):
-        return self.children[18]
+        best_node = None
+
+        for child in self.children:
+            if child.totalCost == None:
+                current_node = child.get_best_node()
+            else:
+                current_node = child
+
+            if best_node == None:
+                best_node = current_node
+            elif current_node.totalCost < best_node.totalCost:
+                best_node = current_node
+            elif current_node.totalCost == best_node.totalCost & current_node.estimatedCost < best_node.estimatedCost:
+                best_node = current_node
+
+        return best_node
 
 
     def get_solution(self):
@@ -151,7 +166,7 @@ class Node(object):
         clicks = []
 
         self.get_children()
-        best_node = self
+        best_node = None
 
         while solution_found != True:
             best_node = self.get_best_node()
