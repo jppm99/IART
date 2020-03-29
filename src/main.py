@@ -85,6 +85,7 @@ class Node(object):
         bubbles1 = []
         bubbles2 = []
         bubbles3 = []
+        bubbles4 = []
         cost = 0
 
         i = 0
@@ -96,14 +97,17 @@ class Node(object):
                 bubbles2.append([y,i])
             elif (bubble == 3):
                 bubbles3.append([y,i])
+            elif (bubble == 4):
+                bubbles4.append([y,i])
             i = i + 1
 
-        total_bubbles = len(bubbles1) + len(bubbles2) + len(bubbles3)
+        total_bubbles = len(bubbles1) + len(bubbles2) + len(bubbles3) + len(bubbles4)
         cost = cost + self.isolation_cost(bubbles1, 2-total_bubbles)
         cost = cost + self.isolation_cost(bubbles2, 3-total_bubbles)
         cost = cost + self.isolation_cost(bubbles3, 4-total_bubbles)
+        cost = cost + self.isolation_cost(bubbles4, 5-total_bubbles)
 
-        if cost < (len(bubbles1) + len(bubbles2)*2 + len(bubbles3)*3):
+        if cost < (len(bubbles1) + len(bubbles2)*2 + len(bubbles3)*3 + len(bubbles4)*4):
             only_isolated[0] = False
 
         return cost
@@ -195,10 +199,12 @@ class Node(object):
         # y axis "inverted" cuz origin is in oposite side in screen and state array
         for y in range(yLength):
             for x in range(xLength):
-                if self.state[y][x] == 3:
-                    arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.GREEN)
-                elif self.state[y][x] == 2:
+                if self.state[y][x] == 4:
+                    arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.BLUE)
+                elif self.state[y][x] == 3:
                     arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.YELLOW)
+                elif self.state[y][x] == 2:
+                    arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.GREEN)
                 elif self.state[y][x] == 1:
                     arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.RED)
         
@@ -245,6 +251,8 @@ class Node(object):
 
         while not solution_found:
             best_node = self.get_best_node()
+            print(best_node.click)
+            print(best_node.estimatedCost, best_node.totalCost)
             if best_node.estimatedCost == 0:
                 solution_found = True
             else:
@@ -355,7 +363,9 @@ class Game(object):
         # y axis "inverted" cuz origin is in oposite side in screen and currState array
         for y in range(yLength):
             for x in range(xLength):
-                if currState[y][x] == 3:
+                if currState[y][x] == 4:
+                    arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.BLUE)
+                elif currState[y][x] == 3:
                     arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.GREEN)
                 elif currState[y][x] == 2:
                     arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.YELLOW)
