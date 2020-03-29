@@ -53,6 +53,21 @@ class Node(object):
             self.totalCost = self.currentCost + self.estimatedCost
 
 
+    def bubble_cost(self, bubble, remaining_health):
+        global yLength
+
+        i = 0
+        while i < yLength:
+            if i != bubble[0]:
+                if self.state[bubble[0]][bubble[1]]:
+                    remaining_health = remaining_health - 1
+                    if remaining_health < 1:
+                        break
+        
+        return remaining_health
+
+
+
     def isolation_cost(self, bubbles, remaining_health):
         if remaining_health < 1:
             return 0
@@ -65,6 +80,8 @@ class Node(object):
 
 
     def line_estimated_cost(self, y, only_isolated):
+        global xLength
+
         bubbles1 = []
         bubbles2 = []
         bubbles3 = []
