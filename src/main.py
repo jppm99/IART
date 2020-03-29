@@ -47,13 +47,28 @@ class Node(object):
         self.id = nodeCount
         self.currentCost = currentCost
         if id == 1:
-            self.resetCosts()
+            self.reset_costs()
         else:
             self.estimatedCost = 0
             self.totalCost = self.currentCost + self.estimatedCost
 
 
-    def reset_costs():
+    def calculate_estimated_cost(self):
+        global yLength
+        cost = 0
+        only_isolated = True
+
+        i = 0
+        while i < yLength:
+            cost = cost + line_estimated_cost(i, only_isolated)
+
+        if not only_isolated:
+            cost = cost + 1
+        
+        return cost
+
+
+    def reset_costs(self):
         self.estimatedCost = None
         self.totalCost = None
 
@@ -168,7 +183,7 @@ class Node(object):
         self.get_children()
         best_node = None
 
-        while solution_found != True:
+        while not solution_found:
             best_node = self.get_best_node()
             if best_node.estimatedCost == 0:
                 solution_found = True
