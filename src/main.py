@@ -53,6 +53,31 @@ class Node(object):
             self.totalCost = self.currentCost + self.estimatedCost
 
 
+    def line_estimated_cost(self, y, only_isolated):
+        bubbles1 = []
+        bubbles2 = []
+        bubbles3 = []
+        cost = 0
+
+        i = 0
+        while i < xLength:
+            bubble = self.state[y][i]
+            if (bubble == 1):
+                bubbles1.append(bubble)
+            elif (bubble == 2):
+                bubbles2.append(bubble)
+            elif (bubble == 3):
+                bubbles3.append(bubble)
+        
+        total_bubbles = len(bubbles1) + len(bubbles2) + len(bubbles3)
+        cost = cost + self.isolation_cost(bubbles1, 2-total_bubbles)
+        cost = cost + self.isolation_cost(bubbles2, 3-total_bubbles)
+        cost = cost + self.isolation_cost(bubbles3, 4-total_bubbles)
+
+        if cost < (len(bubbles1) + len(bubbles2)*2 + len(bubbles3)*3):
+            only_isolated = False
+
+
     def calculate_estimated_cost(self):
         global yLength
         cost = 0
@@ -60,7 +85,8 @@ class Node(object):
 
         i = 0
         while i < yLength:
-            cost = cost + line_estimated_cost(i, only_isolated)
+            cost = cost + self.line_estimated_cost(i, only_isolated)
+            i = i + 1
 
         if not only_isolated:
             cost = cost + 1
