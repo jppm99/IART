@@ -49,7 +49,7 @@ class Node(object):
         if id == 1:
             self.reset_costs()
         else:
-            self.estimatedCost = 0
+            self.estimatedCost = self.calculate_estimated_cost()
             self.totalCost = self.currentCost + self.estimatedCost
 
 
@@ -63,9 +63,9 @@ class Node(object):
                     remaining_health = remaining_health - 1
                     if remaining_health < 1:
                         break
+            i = i + 1
         
         return remaining_health
-
 
 
     def isolation_cost(self, bubbles, remaining_health):
@@ -96,6 +96,7 @@ class Node(object):
                 bubbles2.append([y,i])
             elif (bubble == 3):
                 bubbles3.append([y,i])
+            i = i + 1
         
         total_bubbles = len(bubbles1) + len(bubbles2) + len(bubbles3)
         cost = cost + self.isolation_cost(bubbles1, 2-total_bubbles)
