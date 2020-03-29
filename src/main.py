@@ -41,7 +41,6 @@ class Node(object):
         self.parent = parent
         self.children = []
         self.click = click
-        #print(self.click)
         self.state = state
         self.balls = []
         nodeCount += 1
@@ -51,7 +50,7 @@ class Node(object):
             self.reset_costs()
         else:
             self.estimatedCost = 0
-            self.totalCost = self.currentCost + self.estimatedCost
+            self.totalCost = 0
 
 
     def bubble_cost(self, bubble, remaining_health):
@@ -105,7 +104,7 @@ class Node(object):
         cost = cost + self.isolation_cost(bubbles3, 4-total_bubbles)
 
         if cost < (len(bubbles1) + len(bubbles2)*2 + len(bubbles3)*3):
-            only_isolated = False
+            only_isolated[0] = False
 
         return cost
 
@@ -113,14 +112,14 @@ class Node(object):
     def calculate_estimated_cost(self):
         global yLength
         cost = 0
-        only_isolated = True
+        only_isolated = [True]
 
         i = 0
         while i < yLength:
             cost = cost + self.line_estimated_cost(i, only_isolated)
             i = i + 1
 
-        if not only_isolated:
+        if not only_isolated[0]:
             cost = cost + 1
         
         self.estimatedCost = cost
@@ -165,6 +164,7 @@ class Node(object):
                 self.check_colisions()
 
         self.calculate_estimated_cost()
+        self.totalCost = self.currentCost + self.estimatedCost
 
 
     def get_children(self):
@@ -230,7 +230,7 @@ class Node(object):
                 best_node = current_node
             elif current_node.totalCost < best_node.totalCost:
                 best_node = current_node
-            elif current_node.totalCost == best_node.totalCost & current_node.estimatedCost < best_node.estimatedCost:
+            elif (current_node.totalCost == best_node.totalCost) & (current_node.estimatedCost < best_node.estimatedCost):
                 best_node = current_node
 
         return best_node
@@ -256,6 +256,7 @@ class Node(object):
             clicks.append(current_node.click)
             current_node = current_node.parent
 
+        clicks.reverse()
         return clicks
 
 
