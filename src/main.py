@@ -41,15 +41,16 @@ class Node(object):
         self.parent = parent
         self.children = []
         self.click = click
+        #print(self.click)
         self.state = state
         self.balls = []
         nodeCount += 1
         self.id = nodeCount
         self.currentCost = currentCost
-        if id == 1:
+        if self.id == 1:
             self.reset_costs()
         else:
-            self.estimatedCost = self.calculate_estimated_cost()
+            self.estimatedCost = 0
             self.totalCost = self.currentCost + self.estimatedCost
 
 
@@ -59,7 +60,7 @@ class Node(object):
         i = 0
         while i < yLength:
             if i != bubble[0]:
-                if self.state[bubble[0]][bubble[1]]:
+                if self.state[i][bubble[1]]:
                     remaining_health = remaining_health - 1
                     if remaining_health < 1:
                         break
@@ -97,7 +98,7 @@ class Node(object):
             elif (bubble == 3):
                 bubbles3.append([y,i])
             i = i + 1
-        
+
         total_bubbles = len(bubbles1) + len(bubbles2) + len(bubbles3)
         cost = cost + self.isolation_cost(bubbles1, 2-total_bubbles)
         cost = cost + self.isolation_cost(bubbles2, 3-total_bubbles)
@@ -122,7 +123,7 @@ class Node(object):
         if not only_isolated:
             cost = cost + 1
         
-        return cost
+        self.estimatedCost = cost
 
 
     def reset_costs(self):
@@ -162,6 +163,8 @@ class Node(object):
             while len(self.balls) > 0:
                 self.move_balls()
                 self.check_colisions()
+
+        self.calculate_estimated_cost()
 
 
     def get_children(self):
@@ -246,7 +249,7 @@ class Node(object):
                 solution_found = True
             else:
                 best_node.get_children()
-                best_node.resetCosts()
+                best_node.reset_costs()
 
         current_node = best_node
         while current_node.id != 1:
