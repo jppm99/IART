@@ -321,14 +321,15 @@ class Projectile(object):
         del self
         
 
+
 class Game(object):
 
-    def __init__(self, filename):
+    def __init__(self, state):
         global xLength, yLength
         global SCREEN_WIDTH, SCREEN_HEIGHT
 
-        self.filename = filename
-        self.get_level()
+        self.state = state
+        self.balls = []
         
         arcade.open_window(SCREEN_WIDTH, SCREEN_HEIGHT, "Bubble blast but better")
         arcade.set_background_color(arcade.color.WHITE)
@@ -336,38 +337,27 @@ class Game(object):
         self.radius = min(SCREEN_WIDTH / xLength, SCREEN_HEIGHT / yLength) * CIRCLE_PADDING / 2
         self.row_height = SCREEN_HEIGHT / yLength
         self.col_width = SCREEN_WIDTH / xLength
-    
-    def get_level(self):
-        global currState, nTries
-        global xLength, yLength
 
-        path = '../' + self.filename
-
-        with open(path, 'r') as f:
-            [xLength, yLength, nTries] = [int(el) for el in f.readline().split()]
-            
-            for line in f:
-                currState.append([int(el) for el in line.split()])
     
     def draw_screen(self, sleep_duration, log):
-        global currState, SCREEN_HEIGHT
+        global SCREEN_HEIGHT
 
         if log:
             print("**************")
-            print(currState)
+            print(self.state)
 
         arcade.start_render()
 
-        # y axis "inverted" cuz origin is in oposite side in screen and currState array
+        # y axis "inverted" cuz origin is in oposite side in screen and self.state array
         for y in range(yLength):
             for x in range(xLength):
-                if currState[y][x] == 4:
+                if self.state[y][x] == 4:
                     arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.BLUE)
-                elif currState[y][x] == 3:
+                elif self.state[y][x] == 3:
                     arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.GREEN)
-                elif currState[y][x] == 2:
+                elif self.state[y][x] == 2:
                     arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.YELLOW)
-                elif currState[y][x] == 1:
+                elif self.state[y][x] == 1:
                     arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.RED)
         
         arcade.finish_render()
@@ -381,28 +371,20 @@ class Game(object):
                 print("sleeping " + str(sleep_duration) + "s")
             time.sleep(sleep_duration)
 
-    def get_input(self):
-        global xLength, yLength, nTries
-
-        nTries -= 1
-        return [random.randint(0,yLength-1), random.randint(0, xLength-1)]
-
 
     def move_balls(self, log):
-        global balls
-        for ball in balls:
+        for ball in self.balls:
             ball.move()
             if log:
                 print(ball)
 
 
     def check_colisions(self, log):
-        global balls, currState
         newBalls = []
 
         i = 0
-        while i < len(balls):
-            auxballs = balls[i].check_colision(balls, currState)
+        while i < len(self.balls):
+            auxballs = self.balls[i].check_colision(self.balls, self.state)
             if auxballs != "deleted":
                 if (len(auxballs) > 0):
                     newBalls.extend(auxballs)
@@ -410,38 +392,34 @@ class Game(object):
                 else:
                     i=i+1
         
-        balls.extend(newBalls)
+        self.balls.extend(newBalls)
 
         if log:
-            for ball in balls:
+            for ball in self.balls:
                 print(ball)
 
 
-    def play(self, log):
-        global nTries, balls, currState
+    def play(self, clicks, log):
+        global nTries
 
         self.draw_screen(1, log)
 
-        balls.clear()
-
-        while nTries > 0:
-            click = self.get_input()
-
+        for click in clicks:
             print("click: (" + str(click[1]) + "," + str(click[0]) + ")")
-            currState[click[0]][click[1]] = max(0, currState[click[0]][click[1]] - 1)
+            self.state[click[0]][click[1]] = max(0, self.state[click[0]][click[1]] - 1)
             self.draw_screen(0.7, log)
 
-            if not currState[click[0]] [click[1]]:
-                balls.append(Projectile("up", click))
-                balls.append(Projectile("down", click))
-                balls.append(Projectile("right", click))
-                balls.append(Projectile("left", click))
+            if not self.state[click[0]] [click[1]]:
+                self.balls.append(Projectile("up", click))
+                self.balls.append(Projectile("down", click))
+                self.balls.append(Projectile("right", click))
+                self.balls.append(Projectile("left", click))
 
-                while len(balls) > 0:
+                while len(self.balls) > 0:
                     self.move_balls(log)
                     self.check_colisions(log)
                     time.sleep(0.2)
-
+            time.sleep(3)
 
 def get_level(name):
     global nTries
@@ -463,16 +441,14 @@ def get_level(name):
 def main():
     global nTries, name
 
-    game = Game(name)
-
-    game.play(log=False)
-
-    print("Game Ended - %d tries left" % nTries)
-
     state = get_level(name)
+    #print("Game Ended - %d tries left" % nTries)
+
     root = Node(None, None, state, 0)
     solution = root.get_solution()
     print(solution)
+    game = Game(state)
+    game.play(solution, log=False)
 
     arcade.run()
     
