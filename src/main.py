@@ -251,8 +251,6 @@ class Node(object):
 
         while not solution_found:
             best_node = self.get_best_node()
-            print(best_node.click)
-            print(best_node.estimatedCost, best_node.totalCost)
             if best_node.estimatedCost == 0:
                 solution_found = True
             else:
