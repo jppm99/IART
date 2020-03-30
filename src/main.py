@@ -29,7 +29,7 @@ nodeCount = 0
 # Node object, used to create the search tree
 class Node(object):
 
-    #Node object init
+    # Node object init
     def __init__(self, parent, click, state, currentCost):
         global nodeCount
 
@@ -41,16 +41,18 @@ class Node(object):
         nodeCount += 1
         self.id = nodeCount
         self.currentCost = currentCost
-        if self.id == 1:    #root
+        if self.id == 1:    # root
             self.reset_costs()
         else:
             self.estimatedCost = 0
             self.totalCost = 0
 
 
+    # Calculates and returns the number of hits absolutely necessary to eliminate a given bubble
     def bubble_cost(self, bubble, remaining_health):
         global yLength
 
+        # Check if there are bubbles on the same column as the given bubble, if there are, it might not be absolutely necessary to hit the bubble
         i = 0
         while i < yLength:
             if i != bubble[0]:
@@ -63,6 +65,7 @@ class Node(object):
         return remaining_health
 
 
+    # Calculates the cost of a given group of bubbles
     def isolation_cost(self, bubbles, remaining_health):
         if remaining_health < 1:
             return 0
@@ -355,6 +358,7 @@ class Game(object):
         self.draw_screen(1, log)
 
         for click in clicks:
+            nTries = nTries - 1
             print("click: (" + str(click[1]) + "," + str(click[0]) + ")")
             self.state[click[0]][click[1]] = max(0, self.state[click[0]][click[1]] - 1)
             self.draw_screen(0.7, log)
@@ -412,23 +416,37 @@ def get_level(name):
     
 
 
+def print_solution(solution, start, end):
+    print("Solution:")
+    for click in solution:
+        print("(%d, %d)" % (click[1], click[0]))
+    print("Time elapsed:", end-start, "\n")
+
+
 def main():
     global nTries, name
 
     state = get_level(name)
-    #print("Game Ended - %d tries left" % nTries)
 
     root = Node(None, None, state, 0)
+
+    print("\n\n")
+    print("Calculating solution using A* algorithm...")
     start = time.time()
     solution = root.get_solution()
     end = time.time()
-    print(solution, end-start)
+    print_solution(solution, start, end)
+
+    print("Calculating solution using brute-force algorithm...")
     start = time.time()
     solution2 = root.brute_force_solution()
     end = time.time()
-    print(solution2, end-start)
+    print_solution(solution2, start, end)
+
+    print("Displaying A* algorithm solution...")
     game = Game(state)
     game.play(solution, log=False)
+    print("Game Ended - %d tries left" % nTries)
 
     arcade.run()
 
