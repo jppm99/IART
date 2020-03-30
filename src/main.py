@@ -12,18 +12,12 @@ CIRCLE_PADDING = 0.8  # 1 is touching lines and 0 no balls at all
 # name of the file to be processed
 name = 'level.txt'
 
-# 2d matrix with (0,0) at top left, currState[y][x]
-currState = []
-
 # x and y axis size
 xLength = 0
 yLength = 0
 
 # number of tries
 nTries = 0
-
-# list of projectiles
-balls = []
 
 # projectiles count
 ballCount = 0
@@ -32,7 +26,7 @@ ballCount = 0
 nodeCount = 0
 
 
-
+# Node object, used to create the search tree
 class Node(object):
 
     def __init__(self, parent, click, state, currentCost):
@@ -133,11 +127,6 @@ class Node(object):
         self.estimatedCost = None
         self.totalCost = None
 
-
-    def move_balls(self):
-        for ball in self.balls:
-            ball.move()
-
     
     def check_colisions(self):
         newBalls = []
@@ -164,7 +153,7 @@ class Node(object):
             self.balls.append(Projectile("left", self.click))
 
             while len(self.balls) > 0:
-                self.move_balls()
+                move_balls(self.balls)
                 self.check_colisions()
 
         self.calculate_estimated_cost()
@@ -374,13 +363,6 @@ class Game(object):
             time.sleep(sleep_duration)
 
 
-    def move_balls(self, log):
-        for ball in self.balls:
-            ball.move()
-            if log:
-                print(ball)
-
-
     def check_colisions(self, log):
         newBalls = []
 
@@ -420,10 +402,16 @@ class Game(object):
                 self.balls.append(Projectile("left", click))
 
                 while len(self.balls) > 0:
-                    self.move_balls(log)
+                    move_balls(self.balls)
                     self.check_colisions(log)
                     self.draw_screen(0.2, log)
             time.sleep(1.2)
+
+
+
+def move_balls(balls):
+        for ball in balls:
+            ball.move()
 
 
 
