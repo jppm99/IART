@@ -29,6 +29,7 @@ nodeCount = 0
 # Node object, used to create the search tree
 class Node(object):
 
+    #Node object init
     def __init__(self, parent, click, state, currentCost):
         global nodeCount
 
@@ -40,7 +41,7 @@ class Node(object):
         nodeCount += 1
         self.id = nodeCount
         self.currentCost = currentCost
-        if self.id == 1:
+        if self.id == 1:    #root
             self.reset_costs()
         else:
             self.estimatedCost = 0
@@ -128,21 +129,6 @@ class Node(object):
         self.totalCost = None
 
     
-    def check_colisions(self):
-        newBalls = []
-
-        i = 0
-        while i < len(self.balls):
-            auxballs = self.balls[i].check_colision(self.balls, self.state)
-            if auxballs != "deleted":
-                if (len(auxballs) > 0):
-                    newBalls.extend(auxballs)
-                else:
-                    i=i+1
-        
-        self.balls.extend(newBalls)
-
-    
     def process_click(self):
         self.state[self.click[0]][self.click[1]] = max(0, self.state[self.click[0]][self.click[1]] - 1)
 
@@ -154,7 +140,7 @@ class Node(object):
 
             while len(self.balls) > 0:
                 move_balls(self.balls)
-                self.check_colisions()
+                check_colisions(self.balls, self.state)
 
         self.calculate_estimated_cost()
         self.totalCost = self.currentCost + self.estimatedCost
@@ -363,28 +349,6 @@ class Game(object):
             time.sleep(sleep_duration)
 
 
-    def check_colisions(self, log):
-        newBalls = []
-
-        i = 0
-        while i < len(self.balls):
-            auxballs = self.balls[i].check_colision(self.balls, self.state)
-            if auxballs != "deleted":
-                if (len(auxballs) > 0):
-                    newBalls.extend(auxballs)
-                    self.draw_screen(0.05, log)
-                else:
-                    i=i+1
-            else:
-                self.draw_screen(0.05, log)
-        
-        self.balls.extend(newBalls)
-
-        if log:
-            for ball in self.balls:
-                print(ball)
-
-
     def play(self, clicks, log):
         global nTries
 
@@ -403,7 +367,7 @@ class Game(object):
 
                 while len(self.balls) > 0:
                     move_balls(self.balls)
-                    self.check_colisions(log)
+                    check_colisions(self.balls, self.state)
                     self.draw_screen(0.2, log)
             time.sleep(1.2)
 
@@ -412,6 +376,21 @@ class Game(object):
 def move_balls(balls):
         for ball in balls:
             ball.move()
+
+
+def check_colisions(balls, state):
+        newBalls = []
+
+        i = 0
+        while i < len(balls):
+            auxballs = balls[i].check_colision(balls, state)
+            if auxballs != "deleted":
+                if (len(auxballs) > 0):
+                    newBalls.extend(auxballs)
+                else:
+                    i=i+1
+        
+        balls.extend(newBalls)
 
 
 
