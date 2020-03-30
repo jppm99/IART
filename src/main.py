@@ -187,42 +187,6 @@ class Node(object):
             i = i + 1
 
 
-    def draw(self, sleep_duration):
-        global SCREEN_HEIGHT, SCREEN_WIDTH, CIRCLE_PADDING, yLength, xLength
-
-        radius = min(SCREEN_WIDTH / xLength, SCREEN_HEIGHT / yLength) * CIRCLE_PADDING / 2
-        row_height = SCREEN_HEIGHT / yLength
-        col_width = SCREEN_WIDTH / xLength
-
-        arcade.start_render()
-
-        # y axis "inverted" cuz origin is in oposite side in screen and state array
-        for y in range(yLength):
-            for x in range(xLength):
-                if self.state[y][x] == 4:
-                    arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.BLUE)
-                elif self.state[y][x] == 3:
-                    arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.YELLOW)
-                elif self.state[y][x] == 2:
-                    arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.GREEN)
-                elif self.state[y][x] == 1:
-                    arcade.draw_circle_filled((x + 0.5) * col_width, -((y + 0.5) * row_height) + SCREEN_HEIGHT, radius, arcade.color.RED)
-        
-        arcade.finish_render()
-        
-        if sleep_duration == None:
-            time.sleep(0.6)
-        else:
-            time.sleep(sleep_duration)
-
-
-    def draw_results(self, sleep_duration):
-        self.draw(sleep_duration)
-
-        for child in self.children:
-            child.draw_results(sleep_duration)
-
-
     def get_best_node(self):
         best_node = None
 
