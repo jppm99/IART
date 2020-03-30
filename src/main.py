@@ -9,9 +9,6 @@ SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 600
 CIRCLE_PADDING = 0.8  # 1 is touching lines and 0 no balls at all
 
-# name of the file to be processed
-name = 'level.txt'
-
 # x and y axis size
 xLength = 0
 yLength = 0
@@ -77,6 +74,7 @@ class Node(object):
         return cost
 
 
+    # Calculates the estimated cost of a given line
     def line_estimated_cost(self, y, only_isolated):
         global xLength
 
@@ -105,6 +103,7 @@ class Node(object):
         cost = cost + self.isolation_cost(bubbles3, 4-total_bubbles)
         cost = cost + self.isolation_cost(bubbles4, 5-total_bubbles)
 
+        # There are bubbles that are not completely isolated, they might be hit by projectiles
         if cost < (len(bubbles1) + len(bubbles2)*2 + len(bubbles3)*3 + len(bubbles4)*4):
             only_isolated[0] = False
 
@@ -319,12 +318,8 @@ class Game(object):
         self.col_width = SCREEN_WIDTH / xLength
 
     
-    def draw_screen(self, sleep_duration, log):
+    def draw_screen(self, sleep_duration):
         global SCREEN_HEIGHT
-
-        if log:
-            print("**************")
-            print(self.state)
 
         arcade.start_render()
 
@@ -343,25 +338,21 @@ class Game(object):
         arcade.finish_render()
         
         if sleep_duration == None:
-            if log:
-                print("sleeping 0.6s")
             time.sleep(0.6)
         else:
-            if log:
-                print("sleeping " + str(sleep_duration) + "s")
             time.sleep(sleep_duration)
 
 
-    def play(self, clicks, log):
+    def play(self, clicks):
         global nTries
 
-        self.draw_screen(1, log)
+        self.draw_screen(1.2)
 
         for click in clicks:
             nTries = nTries - 1
             print("click: (" + str(click[1]) + "," + str(click[0]) + ")")
             self.state[click[0]][click[1]] = max(0, self.state[click[0]][click[1]] - 1)
-            self.draw_screen(0.7, log)
+            self.draw_screen(0.7)
 
             if not self.state[click[0]][click[1]]:
                 self.balls.append(Projectile("up", click))
@@ -372,7 +363,7 @@ class Game(object):
                 while len(self.balls) > 0:
                     move_balls(self.balls)
                     check_colisions(self.balls, self.state)
-                    self.draw_screen(0.2, log)
+                    self.draw_screen(0.2)
             time.sleep(1.2)
 
 
@@ -424,13 +415,16 @@ def print_solution(solution, start, end):
 
 
 def main():
-    global nTries, name
+    global nTries
 
-    state = get_level(name)
+    print("\n\n")
+    level = input("Introduce level file: ")
+
+    state = get_level(level)
 
     root = Node(None, None, state, 0)
 
-    print("\n\n")
+    print("\n")
     print("Calculating solution using A* algorithm...")
     start = time.time()
     solution = root.get_solution()
@@ -445,7 +439,7 @@ def main():
 
     print("Displaying A* algorithm solution...")
     game = Game(state)
-    game.play(solution, log=False)
+    game.play(solution)
     print("Game Ended - %d tries left" % nTries)
 
     arcade.run()
