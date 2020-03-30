@@ -266,6 +266,44 @@ class Node(object):
         return clicks
 
 
+    def empty(self):
+        i = 0
+        while i < yLength:
+            j = 0
+            while j < xLength:
+                if self.state[i][j]:
+                    return False
+                j = j + 1
+            i = i + 1
+
+        return True
+
+
+    def expand(self, nodes):
+        tree_level = []
+
+        for node in nodes:
+            if node.empty():
+                return node
+            else:
+                node.get_children()
+                tree_level.extend(node.children)
+        
+        return self.expand(tree_level)
+
+    
+    def brute_force_solution(self):
+        current_node = self.expand([self])
+        clicks = []
+
+        while current_node.id != 1:
+            clicks.append(current_node.click)
+            current_node = current_node.parent
+
+        clicks.reverse()
+        return clicks
+
+
 
 class Projectile(object):
     # pos is [y,x]
@@ -391,6 +429,8 @@ class Game(object):
                     self.draw_screen(0.05, log)
                 else:
                     i=i+1
+            else:
+                self.draw_screen(0.05, log)
         
         self.balls.extend(newBalls)
 
@@ -409,7 +449,7 @@ class Game(object):
             self.state[click[0]][click[1]] = max(0, self.state[click[0]][click[1]] - 1)
             self.draw_screen(0.7, log)
 
-            if not self.state[click[0]] [click[1]]:
+            if not self.state[click[0]][click[1]]:
                 self.balls.append(Projectile("up", click))
                 self.balls.append(Projectile("down", click))
                 self.balls.append(Projectile("right", click))
@@ -418,8 +458,10 @@ class Game(object):
                 while len(self.balls) > 0:
                     self.move_balls(log)
                     self.check_colisions(log)
-                    time.sleep(0.2)
-            time.sleep(3)
+                    self.draw_screen(0.2, log)
+            time.sleep(1.2)
+
+
 
 def get_level(name):
     global nTries
@@ -438,6 +480,7 @@ def get_level(name):
     return state
     
 
+
 def main():
     global nTries, name
 
@@ -445,13 +488,20 @@ def main():
     #print("Game Ended - %d tries left" % nTries)
 
     root = Node(None, None, state, 0)
+    start = time.time()
     solution = root.get_solution()
-    print(solution)
+    end = time.time()
+    print(solution, end-start)
+    start = time.time()
+    solution2 = root.brute_force_solution()
+    end = time.time()
+    print(solution2, end-start)
     game = Game(state)
     game.play(solution, log=False)
 
     arcade.run()
-    
+
+
 
 if __name__ == '__main__':
     main()
