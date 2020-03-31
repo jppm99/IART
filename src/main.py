@@ -22,6 +22,9 @@ ballCount = 0
 # nodes count
 nodeCount = 0
 
+# algorithm used
+algorithm = "A*"
+
 
 # Node object, used to create the search tree
 class Node(object):
@@ -152,8 +155,13 @@ class Node(object):
         else:
             self.operator = ["attack bubble", self.click[1], self.click[0]]
 
-        self.calculate_estimated_cost()
-        self.totalCost = self.currentCost + self.estimatedCost
+        if algorithm == "A*":
+            self.calculate_estimated_cost()
+            self.totalCost = self.currentCost + self.estimatedCost
+        elif algorithm == "Greedy number":
+            self.totalCost = self.number_of_bubbles()
+        elif algorithm == "Greedy lives":
+            self.totalCost = self.number_of_lives()
 
 
     # Expands the node, getting all possible children, based on the node's state
@@ -183,18 +191,21 @@ class Node(object):
             else:
                 current_node = child
 
-            if best_node == None:
-                best_node = current_node
-            elif current_node.totalCost < best_node.totalCost:
-                best_node = current_node
-            elif (current_node.totalCost == best_node.totalCost) & (current_node.estimatedCost < best_node.estimatedCost):
-                best_node = current_node
+            if current_node != None:
+                if best_node == None:
+                    best_node = current_node
+                elif current_node.totalCost < best_node.totalCost:
+                    best_node = current_node
+                elif (current_node.totalCost == best_node.totalCost) & (current_node.estimatedCost < best_node.estimatedCost):
+                    best_node = current_node
 
         return best_node
 
 
     # Get solution using A* algorithm
     def A_solution(self):
+        global algorithm
+        algorithm = "A*"
         solution_found = False
         operators = []
 
@@ -248,6 +259,8 @@ class Node(object):
     
     # Get solution using breadth-first search
     def breadth_first_solution(self):
+        global algorithm
+        algorithm = "Breadth-first"
         current_node = self.expand_level([self])
         operators = []
 
@@ -257,6 +270,65 @@ class Node(object):
 
         operators.reverse()
         return operators
+
+
+    # Count number of bubbles left
+    def number_of_bubbles(self):
+        counter = 0
+        
+        i = 0
+        while i < yLength:
+            j = 0
+            while j < xLength:
+                if self.state[i][j]:
+                    counter = counter + 1
+                j = j + 1
+            i = i + 1
+
+        return counter
+
+
+    # Count number of lives left
+    def number_of_lives(self):
+        counter = 0
+
+        i = 0
+        while i < yLength:
+            j = 0
+            while j < xLength:
+                counter = counter + self.state[i][j]
+                j = j + 1
+            i = i + 1
+
+        return counter
+
+
+    # Get solution using greedy search
+    def greedy_solution(self, heuristic):
+        global algorithm, nTries
+        algorithm = "Greedy " + heuristic
+        solution_found = False
+        operators = []
+
+        self.get_children()
+        best_node = None
+
+        while not solution_found:
+            best_node = self.get_best_node()
+            if best_node.totalCost == 0:
+                solution_found = True
+            else:
+                if best_node.currentCost < nTries:
+                    best_node.get_children()
+                best_node.reset_costs()
+
+        current_node = best_node
+        while current_node.id != 1:
+            operators.append(current_node.operator)
+            current_node = current_node.parent
+
+        operators.reverse()
+        return operators 
 
 
 
@@ -317,8 +389,10 @@ class Projectile(object):
         
 
 
+# Game object, used to display the solution
 class Game(object):
 
+    # Game object init
     def __init__(self, state):
         global xLength, yLength
         global SCREEN_WIDTH, SCREEN_HEIGHT
@@ -442,7 +516,7 @@ def print_solution(solution, start, end):
 
 
 def main():
-    global nTries
+    global nTries, nodeCount
 
     print("\n\n")
     level = input("Introduce level file: ")
@@ -458,10 +532,28 @@ def main():
     print_solution(solution, start, end)
 
     print("\nCalculating solution using breadth-first search...")
+    nodeCount = 0
+    root = Node(None, None, state, 0)
     start = time.time()
     solution2 = root.breadth_first_solution()
     end = time.time()
     print_solution(solution2, start, end)
+
+    print("\nCalculating solution using greedy search with number of bubbles...")
+    nodeCount = 0
+    root = Node(None, None, state, 0)
+    start = time.time()
+    solution3 = root.greedy_solution("number")
+    end = time.time()
+    print_solution(solution3, start, end)
+
+    print("\nCalculating solution using greedy search with total lives...")
+    nodeCount = 0
+    root = Node(None, None, state, 0)
+    start = time.time()
+    solution3 = root.greedy_solution("lives")
+    end = time.time()
+    print_solution(solution3, start, end)
 
     print("\n\nDisplaying A* algorithm solution...")
     game = Game(state)
