@@ -272,6 +272,7 @@ class Node(object):
         return operators
 
 
+    # Expands node in depth
     def expand_node(self):
         global nTries
 
@@ -289,6 +290,7 @@ class Node(object):
             return False
 
 
+    # Get solution using depth-first search
     def depth_first_solution(self):
         global algorithm
         algorithm = "Depth-first"
@@ -466,6 +468,7 @@ class Game(object):
             time.sleep(sleep_duration)
 
 
+    # Simulate game given the operators
     def play(self, operators):
         global nTries
 
@@ -483,6 +486,7 @@ class Game(object):
             self.state[click[0]][click[1]] = max(0, self.state[click[0]][click[1]] - 1)
             self.draw_screen(0.7)
 
+            # Bubble burst
             if not self.state[click[0]][click[1]]:
                 self.balls.append(Projectile("up", click))
                 self.balls.append(Projectile("down", click))
@@ -502,11 +506,13 @@ class Game(object):
 
 
 
+# Update the positions of the projectiles
 def move_balls(balls):
         for ball in balls:
             ball.move()
 
 
+# Check if there are collisions between the given projectiles and the given state
 def check_collisions(balls, state):
         newBalls = []
 
@@ -523,6 +529,7 @@ def check_collisions(balls, state):
 
 
 
+# Get level from file
 def get_level(name):
     global nTries
     global xLength, yLength
@@ -540,7 +547,7 @@ def get_level(name):
     return state
     
 
-
+# Print the solution
 def print_solution(solution, start, end):
     print("Solution:")
     for operator in solution:
@@ -548,6 +555,7 @@ def print_solution(solution, start, end):
     print("Time elapsed:", end-start, "seconds")
 
 
+# Main
 def main():
     global nTries, nodeCount
 
@@ -558,12 +566,14 @@ def main():
 
     root = Node(None, None, state, 0)
 
+    # A* algorithm
     print("\nCalculating solution using A* algorithm...")
     start = time.time()
     solution = root.A_solution()
     end = time.time()
     print_solution(solution, start, end)
 
+    # Breadth-first search
     print("\nCalculating solution using breadth-first search...")
     nodeCount = 0
     root = Node(None, None, state, 0)
@@ -572,6 +582,7 @@ def main():
     end = time.time()
     print_solution(solution2, start, end)
 
+    # Depth-first search
     print("\nCalculating solution using depth-first search...")
     nodeCount = 0
     root = Node(None, None, state, 0)
@@ -580,6 +591,7 @@ def main():
     end = time.time()
     print_solution(solution3, start, end)
 
+    # Greedy search (number of bubbles)
     print("\nCalculating solution using greedy search with number of bubbles...")
     nodeCount = 0
     root = Node(None, None, state, 0)
@@ -588,6 +600,7 @@ def main():
     end = time.time()
     print_solution(solution4, start, end)
 
+    # Greedy search (number of lives)
     print("\nCalculating solution using greedy search with total lives...")
     nodeCount = 0
     root = Node(None, None, state, 0)
@@ -596,6 +609,7 @@ def main():
     end = time.time()
     print_solution(solution5, start, end)
 
+    # Display A* algorithm's solution
     print("\n\nDisplaying A* algorithm solution...")
     game = Game(state)
     game.play(solution)
