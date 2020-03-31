@@ -16,9 +16,6 @@ yLength = 0
 # number of tries
 nTries = 0
 
-# use number of tries left when expanding the tree
-use_nTries = False
-
 # projectiles count
 ballCount = 0
 
@@ -143,7 +140,7 @@ class Node(object):
 
         # Bubble burst
         if not self.state[self.click[0]][self.click[1]]:
-            self.operator = ["burst", self.click[1], self.click[0]]
+            self.operator = ["burst bubble", self.click[1], self.click[0]]
             self.balls.append(Projectile("up", self.click))
             self.balls.append(Projectile("down", self.click))
             self.balls.append(Projectile("right", self.click))
@@ -153,7 +150,7 @@ class Node(object):
                 move_balls(self.balls)
                 check_colisions(self.balls, self.state)
         else:
-            self.operator = ["atack", self.click[1], self.click[0]]
+            self.operator = ["attack bubble", self.click[1], self.click[0]]
 
         self.calculate_estimated_cost()
         self.totalCost = self.currentCost + self.estimatedCost
@@ -168,11 +165,10 @@ class Node(object):
             j = 0
             while j < xLength:
                 if self.state[i][j] != 0:
-                    if (use_nTries and self.state[i][j] <= nTries - self.currentCost) or (not use_nTries):
-                        new_state = deepcopy(self.state)
-                        child = Node(self, [i,j], new_state, self.currentCost+1)
-                        child.process_click()
-                        self.children.append(child)
+                    new_state = deepcopy(self.state)
+                    child = Node(self, [i,j], new_state, self.currentCost+1)
+                    child.process_click()
+                    self.children.append(child)
                 j = j + 1
             i = i + 1
 
@@ -222,6 +218,7 @@ class Node(object):
         return operators
 
 
+    # Objective Test - Check if node's state is empty
     def empty(self):
         i = 0
         while i < yLength:
@@ -235,6 +232,7 @@ class Node(object):
         return True
 
 
+    # Expands all the nodes of the same level until it finds the solution
     def expand_level(self, nodes):
         tree_level = []
 
@@ -248,7 +246,8 @@ class Node(object):
         return self.expand_level(tree_level)
 
     
-    def brute_force_solution(self):
+    # Get solution using breadth-first search
+    def breadth_first_solution(self):
         current_node = self.expand_level([self])
         operators = []
 
@@ -261,8 +260,10 @@ class Node(object):
 
 
 
+# Projectile object, which is sent when a bubble burst
 class Projectile(object):
-    # pos is [y,x]
+
+    # Projectile object init
     def __init__(self, direction, pos):
         global ballCount
 
@@ -271,12 +272,10 @@ class Projectile(object):
         
         self.direction = direction
         self.pos = pos.copy()
-    
-    def __str__(self):
-        return "id: %d || pos: (%d, %d) || direction: %s" % (self.id, self.pos[1], self.pos[0], self.direction)
 
+
+    # Update pos
     def move(self):
-        # pos update
         if(self.direction == "up"):
             self.pos[0] -= 1
         elif(self.direction == "down"):
@@ -344,9 +343,9 @@ class Game(object):
                 if self.state[y][x] == 4:
                     arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.BLUE)
                 elif self.state[y][x] == 3:
-                    arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.GREEN)
-                elif self.state[y][x] == 2:
                     arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.YELLOW)
+                elif self.state[y][x] == 2:
+                    arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.GREEN)
                 elif self.state[y][x] == 1:
                     arcade.draw_circle_filled((x + 0.5) * self.col_width, -((y + 0.5) * self.row_height) + SCREEN_HEIGHT, self.radius, arcade.color.RED)
         
@@ -433,21 +432,15 @@ def get_level(name):
     
 
 
-def print_solution(solution):
+def print_solution(solution, start, end):
     print("Solution:")
     for operator in solution:
-        print("%s: (%d, %d)" % (operator[0], operator[1], operator[2]))
-
-
-def print_time(start, end):
-    print("Time elapsed", end=" ")
-    if not use_nTries:
-        print("without", end=" ")
-    print("using number of tries:", end-start, "seconds")
+        print("%s (%d, %d)" % (operator[0], operator[1], operator[2]))
+    print("Time elapsed:", end-start, "seconds")
 
 
 def main():
-    global nTries, use_nTries
+    global nTries
 
     print("\n\n")
     level = input("Introduce level file: ")
@@ -457,30 +450,16 @@ def main():
     root = Node(None, None, state, 0)
 
     print("\nCalculating solution using A* algorithm...")
-    use_nTries = False
     start = time.time()
     solution = root.A_solution()
     end = time.time()
-    print_solution(solution)
-    print_time(start, end)
-    use_nTries = True
-    start = time.time()
-    solution = root.A_solution()
-    end = time.time()
-    print_time(start, end)
+    print_solution(solution, start, end)
 
-    print("\nCalculating solution using brute-force algorithm...")
-    use_nTries = False
+    print("\nCalculating solution using breadth-first search...")
     start = time.time()
-    solution2 = root.brute_force_solution()
+    solution2 = root.breadth_first_solution()
     end = time.time()
-    print_solution(solution2)
-    print_time(start, end)
-    use_nTries = True
-    start = time.time()
-    solution2 = root.brute_force_solution()
-    end = time.time()
-    print_time(start, end)
+    print_solution(solution2, start, end)
 
     print("\n\nDisplaying A* algorithm solution...")
     game = Game(state)
