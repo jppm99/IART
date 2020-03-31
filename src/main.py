@@ -148,7 +148,7 @@ class Node(object):
 
             while len(self.balls) > 0:
                 move_balls(self.balls)
-                check_colisions(self.balls, self.state)
+                check_collisions(self.balls, self.state)
         else:
             self.operator = ["attack bubble", self.click[1], self.click[0]]
 
@@ -286,15 +286,16 @@ class Projectile(object):
             self.pos[1] -= 1
 
 
-    def check_colision(self, balls, state):
+    # Check collision between projectile and bubble
+    def check_collision(self, balls, state):
         if not ((self.pos[0] >= 0 and self.pos[0] < yLength) and (self.pos[1] >= 0 and self.pos[1] < xLength)):
             self.delete(balls)
             return "deleted"
 
-        # blowup
         newBalls = []
         if state[self.pos[0]] [self.pos[1]] > 0:
             state[self.pos[0]] [self.pos[1]] -= 1
+            # Bubble burst
             if not state[self.pos[0]] [self.pos[1]]:
                 newBalls.append(Projectile("up", self.pos))
                 newBalls.append(Projectile("down", self.pos))
@@ -308,7 +309,8 @@ class Projectile(object):
         
         return newBalls
 
-        
+
+    # Delete projectile        
     def delete(self, balls):
         balls.remove(self)
         del self
@@ -382,7 +384,7 @@ class Game(object):
 
                 while len(self.balls) > 0:
                     move_balls(self.balls)
-                    check_colisions(self.balls, self.state)
+                    check_collisions(self.balls, self.state)
                     self.draw_screen(0.2)
 
             if nTries != 1 and nTries != 0:
@@ -398,12 +400,12 @@ def move_balls(balls):
             ball.move()
 
 
-def check_colisions(balls, state):
+def check_collisions(balls, state):
         newBalls = []
 
         i = 0
         while i < len(balls):
-            auxballs = balls[i].check_colision(balls, state)
+            auxballs = balls[i].check_collision(balls, state)
             if auxballs != "deleted":
                 if (len(auxballs) > 0):
                     newBalls.extend(auxballs)
