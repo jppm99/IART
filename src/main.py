@@ -272,6 +272,38 @@ class Node(object):
         return operators
 
 
+    def expand_node(self):
+        global nTries
+
+        if self.currentCost == nTries:
+            if(self.empty()):
+                return self
+            else:
+                return False
+        else:
+            self.get_children()
+            for child in self.children:
+                result = child.expand_node()
+                if result != False:
+                    return result
+            return False
+
+
+    def depth_first_solution(self):
+        global algorithm
+        algorithm = "Depth-first"
+        
+        current_node = self.expand_node()
+        operators = []
+
+        while current_node.id != 1:
+            operators.append(current_node.operator)
+            current_node = current_node.parent
+
+        operators.reverse()
+        return operators
+
+
     # Count number of bubbles left
     def number_of_bubbles(self):
         counter = 0
@@ -408,12 +440,13 @@ class Game(object):
         self.col_width = SCREEN_WIDTH / xLength
 
     
+    # Draw the state on the screen
     def draw_screen(self, sleep_duration):
         global SCREEN_HEIGHT
 
         arcade.start_render()
 
-        # y axis "inverted" cuz origin is in oposite side in screen and self.state array
+        # y axis "inverted" because origin is in oposite side in screen and self.state array
         for y in range(yLength):
             for x in range(xLength):
                 if self.state[y][x] == 4:
@@ -539,21 +572,29 @@ def main():
     end = time.time()
     print_solution(solution2, start, end)
 
+    print("\nCalculating solution using depth-first search...")
+    nodeCount = 0
+    root = Node(None, None, state, 0)
+    start = time.time()
+    solution3 = root.depth_first_solution()
+    end = time.time()
+    print_solution(solution3, start, end)
+
     print("\nCalculating solution using greedy search with number of bubbles...")
     nodeCount = 0
     root = Node(None, None, state, 0)
     start = time.time()
-    solution3 = root.greedy_solution("number")
+    solution4 = root.greedy_solution("number")
     end = time.time()
-    print_solution(solution3, start, end)
+    print_solution(solution4, start, end)
 
     print("\nCalculating solution using greedy search with total lives...")
     nodeCount = 0
     root = Node(None, None, state, 0)
     start = time.time()
-    solution3 = root.greedy_solution("lives")
+    solution5 = root.greedy_solution("lives")
     end = time.time()
-    print_solution(solution3, start, end)
+    print_solution(solution5, start, end)
 
     print("\n\nDisplaying A* algorithm solution...")
     game = Game(state)
