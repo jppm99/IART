@@ -16,6 +16,9 @@ yLength = 0
 # number of tries
 nTries = 0
 
+# use number of tries left when expanding the tree
+use_nTries = False
+
 # projectiles count
 ballCount = 0
 
@@ -33,6 +36,7 @@ class Node(object):
         self.parent = parent
         self.children = []
         self.click = click
+        self.operator = []
         self.state = state
         self.balls = []
         nodeCount += 1
@@ -110,6 +114,7 @@ class Node(object):
         return cost
 
 
+    # Calculate the estimated cost (estimated moves necessary) from the node's state to the solution
     def calculate_estimated_cost(self):
         global yLength
         cost = 0
@@ -121,20 +126,24 @@ class Node(object):
             i = i + 1
 
         if not only_isolated[0]:
-            cost = cost + 1
+            cost = cost + 1     # At least one more move necessary to eliminate the non isolated bubbles
         
         self.estimatedCost = cost
 
 
+    # Reset estimatedCost and totalCost
     def reset_costs(self):
         self.estimatedCost = None
         self.totalCost = None
 
     
+    # Calculates next state after click
     def process_click(self):
         self.state[self.click[0]][self.click[1]] = max(0, self.state[self.click[0]][self.click[1]] - 1)
 
+        # Bubble burst
         if not self.state[self.click[0]][self.click[1]]:
+            self.operator = ["burst", self.click[1], self.click[0]]
             self.balls.append(Projectile("up", self.click))
             self.balls.append(Projectile("down", self.click))
             self.balls.append(Projectile("right", self.click))
@@ -143,11 +152,14 @@ class Node(object):
             while len(self.balls) > 0:
                 move_balls(self.balls)
                 check_colisions(self.balls, self.state)
+        else:
+            self.operator = ["atack", self.click[1], self.click[0]]
 
         self.calculate_estimated_cost()
         self.totalCost = self.currentCost + self.estimatedCost
 
 
+    # Expands the node, getting all possible children, based on the node's state
     def get_children(self):
         global xLength, yLength
 
@@ -156,14 +168,16 @@ class Node(object):
             j = 0
             while j < xLength:
                 if self.state[i][j] != 0:
-                    new_state = deepcopy(self.state)
-                    child = Node(self, [i,j], new_state, self.currentCost+1)
-                    child.process_click()
-                    self.children.append(child)
+                    if (use_nTries and self.state[i][j] <= nTries - self.currentCost) or (not use_nTries):
+                        new_state = deepcopy(self.state)
+                        child = Node(self, [i,j], new_state, self.currentCost+1)
+                        child.process_click()
+                        self.children.append(child)
                 j = j + 1
             i = i + 1
 
 
+    # Get best node to expand
     def get_best_node(self):
         best_node = None
 
@@ -183,9 +197,10 @@ class Node(object):
         return best_node
 
 
-    def get_solution(self):
+    # Get solution using A* algorithm
+    def A_solution(self):
         solution_found = False
-        clicks = []
+        operators = []
 
         self.get_children()
         best_node = None
@@ -200,11 +215,11 @@ class Node(object):
 
         current_node = best_node
         while current_node.id != 1:
-            clicks.append(current_node.click)
+            operators.append(current_node.operator)
             current_node = current_node.parent
 
-        clicks.reverse()
-        return clicks
+        operators.reverse()
+        return operators
 
 
     def empty(self):
@@ -220,7 +235,7 @@ class Node(object):
         return True
 
 
-    def expand(self, nodes):
+    def expand_level(self, nodes):
         tree_level = []
 
         for node in nodes:
@@ -230,19 +245,19 @@ class Node(object):
                 node.get_children()
                 tree_level.extend(node.children)
         
-        return self.expand(tree_level)
+        return self.expand_level(tree_level)
 
     
     def brute_force_solution(self):
-        current_node = self.expand([self])
-        clicks = []
+        current_node = self.expand_level([self])
+        operators = []
 
         while current_node.id != 1:
-            clicks.append(current_node.click)
+            operators.append(current_node.operator)
             current_node = current_node.parent
 
-        clicks.reverse()
-        return clicks
+        operators.reverse()
+        return operators
 
 
 
@@ -343,13 +358,19 @@ class Game(object):
             time.sleep(sleep_duration)
 
 
-    def play(self, clicks):
+    def play(self, operators):
         global nTries
+
+        if nTries != 1 and nTries != 0:
+                print(nTries, "tries left")
+        elif nTries != 0:
+            print("Last try")
 
         self.draw_screen(1.2)
 
-        for click in clicks:
+        for operator in operators:
             nTries = nTries - 1
+            click = [operator[2], operator[1]]
             print("click: (" + str(click[1]) + "," + str(click[0]) + ")")
             self.state[click[0]][click[1]] = max(0, self.state[click[0]][click[1]] - 1)
             self.draw_screen(0.7)
@@ -364,6 +385,11 @@ class Game(object):
                     move_balls(self.balls)
                     check_colisions(self.balls, self.state)
                     self.draw_screen(0.2)
+
+            if nTries != 1 and nTries != 0:
+                print(nTries, "tries left")
+            elif nTries != 0:
+                print("Last try")
             time.sleep(1.2)
 
 
@@ -407,15 +433,21 @@ def get_level(name):
     
 
 
-def print_solution(solution, start, end):
+def print_solution(solution):
     print("Solution:")
-    for click in solution:
-        print("(%d, %d)" % (click[1], click[0]))
-    print("Time elapsed:", end-start, "\n")
+    for operator in solution:
+        print("%s: (%d, %d)" % (operator[0], operator[1], operator[2]))
+
+
+def print_time(start, end):
+    print("Time elapsed", end=" ")
+    if not use_nTries:
+        print("without", end=" ")
+    print("using number of tries:", end-start, "seconds")
 
 
 def main():
-    global nTries
+    global nTries, use_nTries
 
     print("\n\n")
     level = input("Introduce level file: ")
@@ -424,20 +456,33 @@ def main():
 
     root = Node(None, None, state, 0)
 
-    print("\n")
-    print("Calculating solution using A* algorithm...")
+    print("\nCalculating solution using A* algorithm...")
+    use_nTries = False
     start = time.time()
-    solution = root.get_solution()
+    solution = root.A_solution()
     end = time.time()
-    print_solution(solution, start, end)
+    print_solution(solution)
+    print_time(start, end)
+    use_nTries = True
+    start = time.time()
+    solution = root.A_solution()
+    end = time.time()
+    print_time(start, end)
 
-    print("Calculating solution using brute-force algorithm...")
+    print("\nCalculating solution using brute-force algorithm...")
+    use_nTries = False
     start = time.time()
     solution2 = root.brute_force_solution()
     end = time.time()
-    print_solution(solution2, start, end)
+    print_solution(solution2)
+    print_time(start, end)
+    use_nTries = True
+    start = time.time()
+    solution2 = root.brute_force_solution()
+    end = time.time()
+    print_time(start, end)
 
-    print("Displaying A* algorithm solution...")
+    print("\n\nDisplaying A* algorithm solution...")
     game = Game(state)
     game.play(solution)
     print("Game Ended - %d tries left" % nTries)
