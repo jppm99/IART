@@ -562,60 +562,56 @@ def main():
     print("\n\n")
     level = input("Introduce level file: ")
 
+    print("1. A* algorithm")
+    print("2. Breadth-first search")
+    print("3. Depth-first search")
+    print("4. Greedy search with number of bubbles")
+    print("5. Greedy search with total lives")
+    option = int(input("Select algorithm: "))
+
     state = get_level(level)
 
     root = Node(None, None, state, 0)
 
-    # A* algorithm
-    print("\nCalculating solution using A* algorithm...")
-    start = time.time()
-    solution = root.A_solution()
-    end = time.time()
-    print_solution(solution, start, end)
+    if option <= 5:
+        # A* algorithm
+        if option == 1:
+            print("\nCalculating solution using A* algorithm...")
+            start = time.time()
+            solution = root.A_solution()
+            end = time.time()
+        # Breadth-first search
+        elif option == 2:
+            print("\nCalculating solution using breadth-first search...")
+            start = time.time()
+            solution = root.breadth_first_solution()
+            end = time.time()
+        # Depth-first search
+        elif option == 3:
+            print("\nCalculating solution using depth-first search...")
+            start = time.time()
+            solution = root.depth_first_solution()
+            end = time.time()
+        # Greedy search (number of bubbles)
+        elif option == 4:
+            print("\nCalculating solution using greedy search with number of bubbles...")
+            start = time.time()
+            solution = root.greedy_solution("number")
+            end = time.time()
+        # Greedy search (number of lives)
+        else:
+            print("\nCalculating solution using greedy search with total lives...")
+            start = time.time()
+            solution = root.greedy_solution("lives")
+            end = time.time()
+        
+        print_solution(solution, start, end)
 
-    # Breadth-first search
-    print("\nCalculating solution using breadth-first search...")
-    nodeCount = 0
-    root = Node(None, None, state, 0)
-    start = time.time()
-    solution2 = root.breadth_first_solution()
-    end = time.time()
-    print_solution(solution2, start, end)
-
-    # Depth-first search
-    print("\nCalculating solution using depth-first search...")
-    nodeCount = 0
-    root = Node(None, None, state, 0)
-    start = time.time()
-    solution3 = root.depth_first_solution()
-    end = time.time()
-    print_solution(solution3, start, end)
-
-    # Greedy search (number of bubbles)
-    print("\nCalculating solution using greedy search with number of bubbles...")
-    nodeCount = 0
-    root = Node(None, None, state, 0)
-    start = time.time()
-    solution4 = root.greedy_solution("number")
-    end = time.time()
-    print_solution(solution4, start, end)
-
-    # Greedy search (number of lives)
-    print("\nCalculating solution using greedy search with total lives...")
-    nodeCount = 0
-    root = Node(None, None, state, 0)
-    start = time.time()
-    solution5 = root.greedy_solution("lives")
-    end = time.time()
-    print_solution(solution5, start, end)
-
-    # Display A* algorithm's solution
-    print("\n\nDisplaying A* algorithm solution...")
-    game = Game(state)
-    game.play(solution)
-    print("Game Ended - %d tries left" % nTries)
-
-    arcade.run()
+        # Display solution
+        print("\n\nDisplaying solution...")
+        game = Game(state)
+        game.play(solution)
+        print("Game Ended - %d tries left" % nTries)
 
 
 
