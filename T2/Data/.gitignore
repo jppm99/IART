@@ -1,0 +1,6 @@
+# ignore everything
+*
+
+# except this
+!.gitignore
+!download_link
