@@ -1,35 +1,21 @@
 import sqlite3
 import pandas as pd
 
+import data_parsing
+
 db_location = "../Data/soccer/database.sqlite"
 
 # ***********  get tables from sqlite file ************
-con = sqlite3.connect(db_location)
-cur = con.cursor()
-
-cur.execute('SELECT * FROM Country;')
-countries = cur.fetchall()
-
-cur.execute('SELECT * FROM League;')
-leagues = cur.fetchall()
-
-cur.execute('SELECT * FROM Match;')
-matches = cur.fetchall()
-
-cur.execute('SELECT * FROM Player WHERE player_name="Moussa Marega";')
-players = cur.fetchall()
-
-cur.execute('SELECT * FROM Player_Attributes;')
-player_attributes = cur.fetchall()
-
-cur.execute('SELECT * FROM Team;')
-teams = cur.fetchall()
-
-cur.execute('SELECT * FROM Team_Attributes;')
-team_attributes = cur.fetchall()
-
-con.close()
+data_parsing.set_db_location(db_location)
+countries = data_parsing.get_table_as_pd_dataframe('Country')
+leagues = data_parsing.get_table_as_pd_dataframe('League')
+matches = data_parsing.get_table_as_pd_dataframe('Match')
+players = data_parsing.get_table_as_pd_dataframe('Player')
+player_attributes = data_parsing.get_table_as_pd_dataframe('Player_Attributes')
+teams = data_parsing.get_table_as_pd_dataframe('Team')
+team_attributes = data_parsing.get_table_as_pd_dataframe('Team_Attributes')
 
 # *********** TODO ************
 
-print(players)
+print(countries)
+print(type(players))
