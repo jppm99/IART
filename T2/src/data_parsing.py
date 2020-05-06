@@ -1,12 +1,12 @@
-import pandas as pd
 import sqlite3
+import pandas as pd
 
-db_location = ""
+db = ""
 
 
 def set_db_location(location):
-    global db_location
-    db_location = location
+    global db
+    db = location
 
 
 def dict_factory(cursor, row):
@@ -19,7 +19,7 @@ def dict_factory(cursor, row):
 def get_table_as_pd_dataframe(table_name):
     query = 'SELECT * FROM ' + table_name + ';'
 
-    con = sqlite3.connect(db_location)
+    con = sqlite3.connect(db)
     con.row_factory = dict_factory
     cur = con.cursor()
 
